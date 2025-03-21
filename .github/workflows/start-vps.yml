@@ -1,0 +1,18 @@
+name: Start Ubuntu VPS
+
+on:
+  repository_dispatch:
+    types: [start-vps]
+
+jobs:
+  run-vps:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Start Ubuntu 20.04 VPS
+        run: |
+          sudo apt update && sudo apt install -y openssh-server
+          sudo systemctl start ssh
+          echo "root:githubpassword" | sudo chpasswd
+          echo "VPS Started! Use SSH:"
+          curl -s https://ngrok.com | bash && ngrok authtoken 2sM9j245HDxeOuqucp2trP6vhPj_LTQ3QWsrVYhwT8DwnRxY
+          ngrok tcp 22
