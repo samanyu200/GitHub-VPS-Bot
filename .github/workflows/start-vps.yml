@@ -10,9 +10,18 @@ jobs:
     steps:
       - name: Start Ubuntu 20.04 VPS
         run: |
-          sudo apt update && sudo apt install -y openssh-server
+          sudo apt update && sudo apt install -y openssh-server curl jq
           sudo systemctl start ssh
           echo "root:githubpassword" | sudo chpasswd
-          echo "VPS Started! Use SSH:"
-          curl -s https://ngrok.com | bash && ngrok authtoken 2sM9j245HDxeOuqucp2trP6vhPj_LTQ3QWsrVYhwT8DwnRxY
-          ngrok tcp 22
+
+          # Install and Start Ngrok
+          curl -s https://ngrok.com | bash
+          ngrok authtoken 2sM9j245HDxeOuqucp2trP6vhPj_LTQ3QWsrVYhwT8DwnRxY
+          ngrok tcp 22 > ngrok.log &
+          sleep 5
+
+          # Extract Ngrok Public IP and Port
+          NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          
+          # Send VPS details to Discord
+          curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"✅ **VPS Started!**\n🔗 **SSH IP:** $NGROK_URL\n🔑 **Username:** root\n🔒 **Password:** githubpassword\"}" https://discord.com/api/webhooks/1352591241371586622/SQGSMT-F-4c1jK327nsfCzfTkWl-L-0HMDUSs82FtMP-7znw8Gl5nNWZRpLnvwNdbiwR
